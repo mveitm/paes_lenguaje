@@ -53,7 +53,7 @@
       margin-bottom: 18px;
     }
     .brand img {
-      max-width: 220px;
+      max-width: 110px;
       width: 100%;
       height: auto;
       display: block;
@@ -181,11 +181,18 @@
       background: #eff6ff;
     }
 
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 10px 0;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 10px 0;
+      margin: 0;
       font-size: 0.95rem;
+      table-layout: fixed;
     }
     th, td {
       border: 1px solid #d7dfec;
@@ -230,6 +237,25 @@
       font-size: 0.92rem;
     }
 
+    .question-bottom-nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+      padding-top: 8px;
+    }
+    .question-bottom-nav button {
+      min-width: 180px;
+    }
+    .results-actions {
+      justify-content: flex-start;
+    }
+    .results-actions button {
+      flex: 0 1 auto;
+      width: auto;
+      padding: 10px 14px;
+      font-size: 0.94rem;
+    }
+
     @media (max-width: 860px) {
       .grid-2, .grid-3, .summary { grid-template-columns: 1fr; }
       .wrap { padding: 12px 10px 24px; }
@@ -242,8 +268,17 @@
       .pill { width: 100%; text-align: center; }
       .passage { max-height: 280px; }
       .question-box, .passage { padding: 14px; }
-      .brand img { max-width: 180px; }
-      th, td { font-size: 0.9rem; padding: 8px; }
+      .brand img { max-width: 90px; }
+      th, td { font-size: 0.85rem; padding: 8px; }
+      .table-responsive { margin-left: -4px; margin-right: -4px; }
+      table { min-width: 0; }
+      .question-bottom-nav button {
+        width: 100%;
+        min-width: 0;
+      }
+      .results-actions button {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -325,6 +360,9 @@
         <div class="question-box">
           <h3 id="question-text"></h3>
           <div id="options-box"></div>
+          <div class="question-bottom-nav">
+            <button class="btn-primary" id="btn-next-bottom">Siguiente pregunta</button>
+          </div>
         </div>
       </div>
     </section>
@@ -343,7 +381,7 @@
       <div id="axis-summary"></div>
       <div id="save-status" class="status info">Preparando envío…</div>
       <p class="support-note">Si el envío automático falla por conexión, descarga un respaldo y compártelo con el docente o administrador.</p>
-      <div class="btn-row mobile-stack">
+      <div class="btn-row mobile-stack results-actions">
         <button class="btn-primary" id="btn-retry-send">Reintentar envío</button>
         <button class="btn-success" id="btn-download-xlsx">Descargar respaldo</button>
         <button class="btn-secondary" id="btn-reset">Reiniciar test</button>
