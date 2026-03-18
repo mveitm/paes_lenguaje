@@ -247,13 +247,36 @@
       min-width: 180px;
     }
     .results-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       justify-content: flex-start;
     }
     .results-actions button {
       flex: 0 1 auto;
       width: auto;
-      padding: 10px 14px;
-      font-size: 0.94rem;
+      min-width: 0;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      line-height: 1.2;
+    }
+    .axis-table-card {
+      margin-top: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .axis-table-title {
+      padding: 12px 14px;
+      font-weight: 700;
+      background: #f8fbff;
+      border-bottom: 1px solid var(--border);
+    }
+    .axis-table-card table {
+      width: 100%;
+      table-layout: auto;
+      min-width: 0;
     }
 
     @media (max-width: 860px) {
@@ -276,8 +299,14 @@
         width: 100%;
         min-width: 0;
       }
+      .results-actions {
+        flex-direction: row !important;
+      }
       .results-actions button {
-        width: 100%;
+        width: auto !important;
+        flex: 0 1 auto;
+        padding: 8px 10px;
+        font-size: 0.84rem;
       }
     }
   </style>
@@ -769,16 +798,36 @@
 
       const axisSummary = $('axis-summary');
       axisSummary.innerHTML = '<h3>Desempeño por eje</h3><p class="muted">% Dominio = aciertos sobre el total del eje. % Precisión = aciertos sobre las preguntas respondidas en ese eje.</p>';
-      const table = document.createElement('table');
-      table.innerHTML = '<tr><th>Eje</th><th>Aciertos</th><th>Respondidas</th><th>Total</th><th>% Dominio</th><th>% Precisión</th></tr>';
+
+      const countsCard = document.createElement('div');
+      countsCard.className = 'axis-table-card';
+      countsCard.innerHTML = '<div class="axis-table-title">Conteos por eje</div>';
+      const countsTable = document.createElement('table');
+      countsTable.innerHTML = '<tr><th>Eje</th><th>Aciertos</th><th>Respondidas</th><th>Total</th></tr>';
+
+      const percentCard = document.createElement('div');
+      percentCard.className = 'axis-table-card';
+      percentCard.innerHTML = '<div class="axis-table-title">Porcentajes por eje</div>';
+      const percentTable = document.createElement('table');
+      percentTable.innerHTML = '<tr><th>Eje</th><th>% Dominio</th><th>% Precisión</th></tr>';
+
       Object.entries(summary.byAxis).forEach(([eje, data]) => {
-        const tr = document.createElement('tr');
         const dominio = Math.round((data.ok / data.total) * 100);
         const precision = data.answered > 0 ? Math.round((data.ok / data.answered) * 100) : 0;
-        tr.innerHTML = `<td>${eje}</td><td>${data.ok}</td><td>${data.answered}</td><td>${data.total}</td><td>${dominio}%</td><td>${precision}%</td>`;
-        table.appendChild(tr);
+
+        const trCounts = document.createElement('tr');
+        trCounts.innerHTML = `<td>${eje}</td><td>${data.ok}</td><td>${data.answered}</td><td>${data.total}</td>`;
+        countsTable.appendChild(trCounts);
+
+        const trPercent = document.createElement('tr');
+        trPercent.innerHTML = `<td>${eje}</td><td>${dominio}%</td><td>${precision}%</td>`;
+        percentTable.appendChild(trPercent);
       });
-      axisSummary.appendChild(table);
+
+      countsCard.appendChild(countsTable);
+      percentCard.appendChild(percentTable);
+      axisSummary.appendChild(countsCard);
+      axisSummary.appendChild(percentCard);
 
       showScreen('screen-result');
       const saveStatus = $('save-status');
@@ -873,15 +922,19 @@
       startTimer();
     });
 
-    $('btn-next').addEventListener('click', () => {
+    function goToNextQuestion() {
       if (state.currentIndex < questions.length - 1) {
         state.currentIndex += 1;
         saveState();
         renderQuestion();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         finalizeTest('Se completó la última pregunta.');
       }
-    });
+    }
+
+    $('btn-next').addEventListener('click', goToNextQuestion);
+    $('btn-next-bottom').addEventListener('click', goToNextQuestion);
 
     $('btn-finish').addEventListener('click', () => {
       const ok = confirm('¿Deseas finalizar el test ahora?');
