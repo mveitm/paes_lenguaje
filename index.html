@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico PAES Competencia Lectora</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #162033;
+      --muted: #5f6b7a;
+      --primary: #1d4ed8;
+      --primary-dark: #163ea7;
+      --success: #0f766e;
+      --danger: #b91c1c;
+      --border: #d9e2f1;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+    .hidden { display: none !important; }
+    h1, h2, h3 { margin-top: 0; }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    h2 { font-size: 1.35rem; margin-bottom: 10px; }
+    h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    p, li { line-height: 1.55; }
+    .muted { color: var(--muted); }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .brand img {
+      max-width: 220px;
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+    .brand.compact {
+      margin-bottom: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .field label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #c7d2e5;
+      font-size: 1rem;
+      outline: none;
+    }
+    .field input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .btn-row.mobile-stack button {
+      flex: 1 1 220px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #e9eefb; color: var(--text); }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .btn-success { background: #dcfce7; color: #166534; }
+    .btn-outline { background: white; color: var(--primary); border: 1px solid var(--primary); }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      background: #edf4ff;
+      border: 1px solid #cfe0ff;
+      color: var(--primary);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .progress {
+      width: 100%;
+      height: 12px;
+      background: #e8edf7;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 8px 0 18px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      transition: width 0.25s ease;
+    }
+    .passage {
+      background: #f8fbff;
+      border: 1px solid #dbe8ff;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+      max-height: 360px;
+      overflow: auto;
+    }
+    .question-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fff;
+    }
+    .option {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px;
+      border: 1px solid #d8dfeb;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      background: #fff;
+    }
+    .option:hover { border-color: #7aa2ff; background: #f8fbff; }
+    .option input { margin-top: 3px; }
+    .option.selected {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #d7dfec;
+      padding: 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #eef4ff; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 10px;
+    }
+    .summary .box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fafcff;
+    }
+    .summary .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .small { font-size: 0.92rem; }
+    .status {
+      margin-top: 16px;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: #f8fbff;
+    }
+    .status.ok { color: var(--success); background: #ecfdf5; border-color: #a7f3d0; }
+    .status.error { color: var(--danger); background: #fef2f2; border-color: #fecaca; }
+    .status.info { color: var(--primary); background: #eff6ff; border-color: #bfdbfe; }
+    .support-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 860px) {
+      .grid-2, .grid-3, .summary { grid-template-columns: 1fr; }
+      .wrap { padding: 12px 10px 24px; }
+      .card { padding: 16px; border-radius: 16px; }
+      h1 { font-size: 1.55rem; }
+      h2 { font-size: 1.2rem; }
+      button { width: 100%; padding: 14px 16px; font-size: 1rem; }
+      .btn-row { flex-direction: column; }
+      .topbar { align-items: stretch; }
+      .pill { width: 100%; text-align: center; }
+      .passage { max-height: 280px; }
+      .question-box, .passage { padding: 14px; }
+      .brand img { max-width: 180px; }
+      th, td { font-size: 0.9rem; padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="screen-start" class="card">
+      <div class="brand"><img src="logo_E360.png" alt="Estudia360" onerror="this.style.display='none'" /></div>
+      <h1>Diagnóstico PAES Competencia Lectora</h1>
+      <p class="muted">Completa los datos del estudiante antes de comenzar. Este enlace está pensado para responder el diagnóstico desde el celular.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" placeholder="Ej.: Mauricio" />
+        </div>
+        <div class="field">
+          <label for="apellido">Apellido</label>
+          <input id="apellido" type="text" placeholder="Ej.: Veit" />
+        </div>
+      </div>
+      <div class="field" style="margin-top:16px;">
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" type="email" placeholder="ejemplo@correo.com" />
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-go-instructions">Continuar</button>
+      </div>
+    </section>
+
+    <section id="screen-instructions" class="card hidden">
+      <div class="brand"><img src="logo_E360.png" alt="Estudia360" onerror="this.style.display='none'" /></div>
+      <h2>Instrucciones generales</h2>
+      <div class="grid-3">
+        <div class="box card" style="padding:16px; box-shadow:none;">
+          <h3>Tiempo</h3>
+          <p>Dispones de <strong>100 minutos</strong>. El cronómetro comienza al presionar <strong>Comenzar test</strong>.</p>
+        </div>
+        <div class="box card" style="padding:16px; box-shadow:none;">
+          <h3>Navegación</h3>
+          <p>Usa <strong>Siguiente pregunta</strong> para avanzar. Puedes terminar antes con <strong>Finalizar</strong>.</p>
+        </div>
+        <div class="box card" style="padding:16px; box-shadow:none;">
+          <h3>Sugerencias</h3>
+          <p>Lee con calma, evita responder por intuición y selecciona solo una alternativa por pregunta.</p>
+        </div>
+      </div>
+      <ul>
+        <li>El test contiene 40 preguntas de selección múltiple.</li>
+        <li>Al finalizar, el sistema intentará enviar automáticamente tus respuestas.</li>
+        <li>Si falla el envío, podrás descargar un respaldo del resultado.</li>
+        <li>El estado del test se guarda en este navegador para evitar pérdidas accidentales.</li>
+      </ul>
+      <div class="btn-row">
+        <button class="btn-secondary" id="btn-back-start">Volver</button>
+        <button class="btn-primary" id="btn-start-test">Comenzar test</button>
+      </div>
+    </section>
+
+    <section id="screen-test" class="hidden">
+      <div class="brand compact"><img src="logo_E360.png" alt="Estudia360" onerror="this.style.display='none'" /></div>
+      <div class="topbar">
+        <div class="pill" id="student-pill">Estudiante:</div>
+        <div class="pill" id="timer-pill">Tiempo restante: 100:00</div>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div>
+            <div class="muted small">Progreso</div>
+            <div><strong id="question-counter">Pregunta 1 de 40</strong></div>
+          </div>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="btn-danger" id="btn-finish">Finalizar</button>
+            <button class="btn-primary" id="btn-next">Siguiente pregunta</button>
+          </div>
+        </div>
+        <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+
+        <div class="passage" id="passage-box"></div>
+
+        <div class="question-box">
+          <h3 id="question-text"></h3>
+          <div id="options-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-result" class="card hidden">
+      <div class="brand"><img src="logo_E360.png" alt="Estudia360" onerror="this.style.display='none'" /></div>
+      <h2>Resultado del diagnóstico</h2>
+      <p class="muted">Tus respuestas ya fueron corregidas. A continuación verás el resumen y el estado del envío automático.</p>
+      <div class="summary">
+        <div class="box"><div class="small muted">Respondidas</div><div class="value" id="sum-answered">0</div></div>
+        <div class="box"><div class="small muted">Correctas</div><div class="value" id="sum-correct">0</div></div>
+        <div class="box"><div class="small muted">Incorrectas</div><div class="value" id="sum-incorrect">0</div></div>
+        <div class="box"><div class="small muted">Omitidas</div><div class="value" id="sum-omitted">0</div></div>
+        <div class="box"><div class="small muted">Porcentaje</div><div class="value" id="sum-score">0%</div></div>
+      </div>
+      <div id="axis-summary"></div>
+      <div id="save-status" class="status info">Preparando envío…</div>
+      <p class="support-note">Si el envío automático falla por conexión, descarga un respaldo y compártelo con el docente o administrador.</p>
+      <div class="btn-row mobile-stack">
+        <button class="btn-primary" id="btn-retry-send">Reintentar envío</button>
+        <button class="btn-success" id="btn-download-xlsx">Descargar respaldo</button>
+        <button class="btn-secondary" id="btn-reset">Reiniciar test</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const CONFIG = {
+      durationMinutes: 100,
+      storageKey: 'paes_cl_test_state_v2',
+      webhookUrl: 'https://script.google.com/macros/s/AKfycbySZm7uzmv_OZfdRgwSVSuUmHPJ_FnNs9SQ84XegobMKL55RgPfA0pUvriGr4Wxl6uz/exec' // Endpoint del Web App.
+    };
+
+    const sections = [
+      {
+        id: 1,
+        title: 'Texto 1: Narrativa Literaria (Situación Personal)',
+        subtitle: 'El leve Pedro (Enrique Anderson Imbert)',
+        paragraphs: [
+          'Durante dos meses se asomó a la muerte. El médico refunfuñaba que la enfermedad de Pedro era nueva, que no había modo de tratarse y que él no sabía qué hacer. Por suerte el enfermo, solito, se fue curando. No había perdido su buen humor, su oronda calma provinciana. Demasiado flaco y eso era todo. Pero al levantarse después de varias semanas de convalecencia se sintió sin peso. -Oye -dijo a su mujer- me siento bien, pero no sé, el cuerpo me parece ausente. Estoy como si mis envolturas fueran a desprenderse dejándome el alma desnuda. -Languideces -le respondió su mujer.',
+          'Se sentía con una ingravidez portentosa. Era la ingravidez de la chispa, de la burbuja y del globo. Le costaba muy poco saltar limpiamente la verja, trepar las escaleras de cinco en cinco, coger de un brinco la manzana alta. -Te has mejorado tanto -observaba su mujer- que pareces un chiquillo acróbata. Una mañana Pedro se asustó. Hasta entonces su agilidad le había preocupado, pero todo ocurría como Dios manda. Era extraordinario que, sin proponérselo, convirtiera la marcha de los humanos en una triunfal carrera en volandas sobre la quinta. Era extraordinario, pero no milagroso.',
+          'Muy temprano fue al potrero. Caminaba con pasos contenidos porque ya sabía que en cuanto taconeara iría dando botes por el corral. Arremangó la camisa, acomodó un tronco, tomó el hacha y asestó el primer golpe. Entonces, rechazado por el impulso de su propio hachazo, Pedro levantó vuelo. Pedro soltó el tronco que lo anclaba, pero se asió fuertemente a su mujer. Así abrazados volvieron a la casa. Al fin Pedro despertó, dolorido por el estrujón de varias horas contra el cielo raso. ¡Qué espanto! Trató de saltar al revés, de caer para arriba, de subir para abajo. Pero el techo lo succionaba como succionaba el suelo a Hebe.',
+          'Tendrás que atarme de una pierna y amarrarme al ropero hasta que llames al doctor y vea qué pasa. Hebe buscó una cuerda y una escalera, ató un pie a su marido y se puso a tirar con todo el ánimo. Ocurrió en un segundo: una corriente de aire sopló por la ventana abierta. Hebe lanzó un grito y la cuerda se le desvaneció. Cuando corrió a la ventana ya su marido subía por el aire inocente de la mañana, subía en suave contoneo como un globo de color fugitivo en un día de fiesta, perdido para siempre, en viaje al infinito.'
+        ]
+      },
+      {
+        id: 2,
+        title: 'Texto 2: No Literario - Argumentativo (Situación Pública)',
+        subtitle: 'La Globalización y sus Monólogos',
+        paragraphs: [
+          'La globalización ha sido presentada durante décadas como el motor indiscutible del progreso humano. Se nos prometió que la interconexión de mercados y culturas disolvería las fronteras y traería prosperidad universal. Sin embargo, al observar el panorama actual, cabe preguntarse: ¿para quién es realmente este progreso? Mientras las élites cosmopolitas disfrutan de la inmediatez de la información y el acceso a bienes globales, vastas regiones del mundo ven cómo su identidad cultural se diluye en una homogeneidad gris dictada por el consumo masivo. El inglés, posicionado como la lengua global, no solo facilita los negocios; también actúa como un filtro que excluye a quienes no tienen acceso a una educación de élite. No se trata solo de economía; es una cuestión de dignidad. No podemos llamar progreso a un sistema que valora más la eficiencia del mercado que la preservación de la diversidad humana. La globalización, tal como la conocemos hoy, parece ser más un monólogo de Occidente que un diálogo entre iguales.'
+        ]
+      },
+      {
+        id: 3,
+        title: 'Texto 3: No Literario - Expositivo (Situación Educativa)',
+        subtitle: 'Los Árboles: Guardianes del Tiempo',
+        paragraphs: [
+          'Los árboles son los organismos vivos más antiguos de la Tierra. No mueren por hacerse viejos, sino por enfermedades, ataques de insectos o la actividad humana. Uno de los métodos más conocidos para determinar su edad es el recuento de los anillos de crecimiento. En climas templados, los árboles crecen más rápido durante la primavera y el verano, dejando un anillo de color claro. Hacia el final del verano u otoño, el crecimiento se ralentiza, generando un anillo más oscuro. Por lo tanto, un par de anillos, uno claro y uno oscuro, equivale a un año de vida.',
+          'Existen árboles cuyos anillos no se aprecian con facilidad. En estos casos, habrá que hacer un análisis químico y microscópico de la madera para identificarlos. Además de su longevidad, los árboles cumplen funciones críticas para el ecosistema: absorben CO2, producen oxígeno y regulan la temperatura. Curiosamente, se ha descubierto que los árboles de un mismo bosque están conectados a través de sus raíces, permitiéndoles compartir nutrientes con los ejemplares más débiles o ancianos. Si pudiéramos levantar el suelo de un bosque, veríamos todo un sistema que conecta a la mayoría de los individuos de la misma especie y población.'
+        ]
+      },
+      {
+        id: 4,
+        title: 'Texto 4: No Literario - Multimodal / Tabla (Situación Pública)',
+        subtitle: 'Clasificación de Kioscos Escolares (Reglamento Sanitario de los Alimentos)',
+        table: [
+          ['Categoría', 'Infraestructura Requerida', 'Alimentos Permitidos (Ejemplos)'],
+          ['Kiosco A (Básico)', 'Estructura móvil o desarmable. Sin conexión a agua potable.', 'Frutas enteras, frutos secos sin sal, barras de cereal sin sellos.'],
+          ['Kiosco B (Medio)', 'Estructura fija. Conexión a red de agua potable y alcantarillado.', 'Lácteos (yogur, leche), jugos de fruta natural sellados, ensaladas envasadas.'],
+          ['Kiosco C (Completo)', 'Local establecido. Área de preparación de alimentos, refrigeración y lavado.', 'Platos preparados (sándwiches saludables, almuerzos), además de lo anterior.']
+        ],
+        note: 'Nota: La venta de productos con sellos "Alto en" está prohibida en todos los kioscos escolares, independientemente de su categoría.'
+      }
+    ];
+
+    const questions = [
+      { id: 1, section: 1, eje: 'Localizar', correcta: 'C', pregunta: '¿Qué afirmación es correcta respecto a la enfermedad de Pedro según el texto?', opciones: { A: 'Era una dolencia crónica que el médico conocía bien.', B: 'Desapareció gracias a un tratamiento experimental.', C: 'Fue una condición nueva que se curó sin intervención médica externa.', D: 'Dejó a Pedro con una pesadez física difícil de sobrellevar.' } },
+      { id: 2, section: 1, eje: 'Interpretar', correcta: 'B', pregunta: '¿Con qué propósito el narrador menciona "la chispa, la burbuja y el globo" en el segundo párrafo?', opciones: { A: 'Para ejemplificar los juguetes que Pedro usaba en su infancia.', B: 'Para describir la naturaleza de la pérdida de peso que sufría Pedro.', C: 'Para señalar que Pedro se sentía feliz como un niño en una fiesta.', D: 'Para comparar la fragilidad de la salud de Pedro con objetos delicados.' } },
+      { id: 3, section: 1, eje: 'Localizar', correcta: 'C', pregunta: '¿Cómo reacciona Hebe inicialmente ante la extraña condición de su marido?', opciones: { A: 'Con pánico inmediato al verlo flotar hacia el techo.', B: 'Con escepticismo, pensando que Pedro solo estaba lánguido.', C: 'Con admiración, comparándolo con un "chiquillo acróbata".', D: 'Con enojo, debido a que Pedro no quería ir a trabajar al potrero.' } },
+      { id: 4, section: 1, eje: 'Interpretar', correcta: 'B', pregunta: 'A partir del relato, se puede inferir que el vuelo de Pedro hacia el infinito fue:', opciones: { A: 'Un acto planeado por él para escapar de su vida provinciana.', B: 'Una consecuencia inevitable y accidental de su pérdida de densidad.', C: 'Un sueño producido por la fiebre de su extraña enfermedad.', D: 'Una metáfora del fallecimiento del protagonista tras su agonía.' } },
+      { id: 5, section: 1, eje: 'Interpretar', correcta: 'B', pregunta: '¿Cuál es la función del hacha en el episodio del potrero?', opciones: { A: 'Servir como arma de defensa contra la naturaleza salvaje.', B: 'Actuar como el detonante físico que impulsa a Pedro hacia arriba.', C: 'Simbolizar el trabajo duro que Pedro ya no podía realizar.', D: 'Ser el objeto que Pedro utilizó para sujetarse al suelo firmemente.' } },
+      { id: 6, section: 1, eje: 'Localizar', correcta: 'C', pregunta: '¿Qué sentimiento predomina en Pedro cuando se despierta contra el cielo raso?', opciones: { A: 'Júbilo por haber alcanzado finalmente el vuelo.', B: 'Alivio por estar a salvo dentro de su propia casa.', C: 'Espanto debido a la pérdida total de control sobre su cuerpo.', D: 'Curiosidad por entender las leyes físicas que lo succionaban.' } },
+      { id: 7, section: 1, eje: 'Interpretar', correcta: 'A', pregunta: 'El uso de la palabra "oronda" para describir la calma de Pedro sugiere que:', opciones: { A: 'Su tranquilidad era excesiva y casi presuntuosa.', B: 'Estaba preocupado por su delgadez física.', C: 'Su calma era una fachada para ocultar su miedo.', D: 'Pedro era una persona colérica antes de enfermar.' } },
+      { id: 8, section: 1, eje: 'Interpretar', correcta: 'C', pregunta: '¿Cuál de los siguientes acontecimientos del relato podría calificarse como el clímax de la historia?', opciones: { A: 'El momento en que el médico admite que no sabe qué hacer.', B: 'El instante en que Pedro decide ir al potrero a cortar leña.', C: 'La escena en que Pedro es soplado por la ventana abierta.', D: 'El diálogo inicial entre Pedro y Hebe sobre su falta de peso.' } },
+      { id: 9, section: 1, eje: 'Evaluar', correcta: 'B', pregunta: '¿Qué característica del narrador se desprende del estilo del relato?', opciones: { A: 'Es un narrador testigo que observa los hechos con objetividad científica.', B: 'Es un narrador omnisciente que utiliza un tono poético y fantástico.', C: 'Es el mismo Pedro contando su experiencia antes de desaparecer.', D: 'Es un narrador observador que desconfía de la veracidad de la historia.' } },
+      { id: 10, section: 1, eje: 'Evaluar', correcta: 'B', pregunta: 'Si un lector evalúa que el final del cuento es trágico, ¿en qué se apoya para dicha valoración?', opciones: { A: 'En que Pedro finalmente logra la felicidad absoluta en el infinito.', B: 'En la pérdida definitiva de Pedro y la impotencia de su mujer.', C: 'En el hecho de que el médico nunca pudo cobrar por sus servicios.', D: 'En que la enfermedad era nueva y podría contagiar a todo el pueblo.' } },
+      { id: 11, section: 2, eje: 'Interpretar', correcta: 'C', pregunta: '¿Cuál es la tesis central del autor en esta columna de opinión?', opciones: { A: 'La globalización es el proceso más exitoso de la historia económica.', B: 'El idioma inglés es la única herramienta válida para el progreso actual.', C: 'La globalización actual es excluyente y atenta contra la diversidad cultural.', D: 'Occidente debe liderar la interconexión de los mercados mundiales.' } },
+      { id: 12, section: 2, eje: 'Interpretar', correcta: 'B', pregunta: '¿Qué sentido tiene la palabra "homogeneidad" en el contexto de la lectura?', opciones: { A: 'Igualdad de derechos para todos los ciudadanos del mundo.', B: 'Uniformidad de gustos y costumbres impuesta por el consumo.', C: 'Estabilidad de los precios en el mercado internacional.', D: 'Coherencia entre las políticas ambientales y el crecimiento.' } },
+      { id: 13, section: 2, eje: 'Evaluar', correcta: 'B', pregunta: '¿Cuál es la función de la pregunta "¿para quién es realmente este progreso?" en el texto?', opciones: { A: 'Demostrar que el autor desconoce los datos estadísticos del PIB.', B: 'Cuestionar la supuesta universalidad de los beneficios de la globalización.', C: 'Solicitar al lector que investigue sobre las élites cosmopolitas.', D: 'Introducir una lista de los países que más han progresado.' } },
+      { id: 14, section: 2, eje: 'Localizar', correcta: 'C', pregunta: 'Según el autor, el idioma inglés actúa como un "filtro" porque:', opciones: { A: 'Permite que solo las personas más inteligentes puedan negociar.', B: 'Purifica las lenguas locales de préstamos lingüísticos innecesarios.', C: 'Genera una barrera de acceso para quienes no pertenecen a la élite educativa.', D: 'Es el idioma más sencillo de aprender en un mundo interconectado.' } },
+      { id: 15, section: 2, eje: 'Evaluar', correcta: 'C', pregunta: '¿Qué actitud asume el emisor frente a la globalización?', opciones: { A: 'Admiración por los avances tecnológicos alcanzados.', B: 'Indiferencia respecto a las consecuencias culturales.', C: 'Crítica ante la desigualdad y la pérdida de identidad.', D: 'Optimismo sobre el futuro diálogo entre las naciones.' } },
+      { id: 16, section: 2, eje: 'Interpretar', correcta: 'B', pregunta: 'Se puede inferir del texto que las "élites cosmopolitas":', opciones: { A: 'Son las más interesadas en preservar la diversidad humana.', B: 'Representan el grupo que más provecho saca del modelo actual.', C: 'Están preocupadas por la exclusión que genera el idioma inglés.', D: 'Viven principalmente en regiones que han perdido su identidad.' } },
+      { id: 17, section: 2, eje: 'Interpretar', correcta: 'C', pregunta: '¿Cuál es el argumento que utiliza el autor para sostener que la globalización es un "monólogo"?', opciones: { A: 'Que todos los países participan por igual en la toma de decisiones.', B: 'Que la eficiencia del mercado es valorada por todas las culturas.', C: 'Que la visión de Occidente predomina sobre el diálogo con otras realidades.', D: 'Que el consumo masivo ha permitido que todos los pueblos se expresen.' } },
+      { id: 18, section: 2, eje: 'Localizar', correcta: 'C', pregunta: '¿Qué valor privilegia el autor por sobre la eficiencia del mercado?', opciones: { A: 'La inmediatez de la información.', B: 'La prosperidad universal.', C: 'La preservación de la diversidad humana.', D: 'La homogeneización de las culturas.' } },
+      { id: 19, section: 2, eje: 'Interpretar', correcta: 'C', pregunta: '¿Cuál de las siguientes afirmaciones constituye una opinión presente en el texto?', opciones: { A: 'El inglés se ha posicionado como el idioma de los negocios globales.', B: 'La globalización ha sido presentada como el motor del progreso.', C: 'El progreso parece ser un monólogo de Occidente.', D: 'Hay personas que tienen acceso a bienes globales.' } },
+      { id: 20, section: 2, eje: 'Evaluar', correcta: 'B', pregunta: 'Al evaluar la solidez del texto, ¿qué elemento podría considerarse una debilidad argumentativa?', opciones: { A: 'El uso de un vocabulario excesivamente técnico y especializado.', B: 'La falta de ejemplos concretos de culturas que hayan perdido su identidad.', C: 'El tono excesivamente optimista que impide ver los riesgos del proceso.', D: 'La brevedad del texto que no permite presentar una tesis clara.' } },
+      { id: 21, section: 3, eje: 'Localizar', correcta: 'B', pregunta: 'Según el texto, ¿por qué razón los árboles no mueren de "viejos"?', opciones: { A: 'Porque sus anillos de crecimiento se renuevan cada año.', B: 'Porque su muerte se debe a factores externos y no a un proceso de senescencia.', C: 'Porque están conectados a las raíces de otros árboles que les dan vida.', D: 'Porque el CO2 que absorben actúa como un regenerador celular.' } },
+      { id: 22, section: 3, eje: 'Localizar', correcta: 'C', pregunta: '¿Qué representa la aparición de un anillo de color oscuro en el tronco de un árbol?', opciones: { A: 'El inicio de una enfermedad o ataque de insectos.', B: 'La fase de crecimiento rápido durante la primavera.', C: 'La ralentización del crecimiento al finalizar el verano u otoño.', D: 'La acumulación excesiva de nutrientes en las raíces.' } },
+      { id: 23, section: 3, eje: 'Localizar', correcta: 'B', pregunta: '¿Cuál es el método alternativo para saber la edad de un árbol cuando los anillos no son visibles?', opciones: { A: 'Contar las ramas principales desde la base.', B: 'Realizar un análisis químico y microscópico de la madera.', C: 'Observar la altura máxima alcanzada por el ejemplar.', D: 'Medir la cantidad de oxígeno que produce en un año.' } },
+      { id: 24, section: 3, eje: 'Interpretar', correcta: 'C', pregunta: '¿Qué función cumplen las raíces en la vida comunitaria del bosque?', opciones: { A: 'Servir como anclas para evitar la erosión del suelo.', B: 'Transportar el CO2 desde las hojas hasta el subsuelo.', C: 'Permitir el intercambio de nutrientes entre árboles del mismo sistema.', D: 'Identificar la edad de los árboles vecinos mediante señales químicas.' } },
+      { id: 25, section: 3, eje: 'Interpretar', correcta: 'C', pregunta: '¿Cuál es la idea principal del segundo párrafo?', opciones: { A: 'Los métodos científicos para analizar la madera de árboles antiguos.', B: 'La importancia de los árboles en la regulación de la temperatura global.', C: 'La interconexión y las funciones ecosistémicas de los árboles.', D: 'La dificultad de apreciar los anillos de crecimiento en ciertas especies.' } },
+      { id: 26, section: 3, eje: 'Interpretar', correcta: 'B', pregunta: 'A partir de la lectura, se puede inferir que en un clima sin estaciones marcadas:', opciones: { A: 'Los árboles crecen mucho más rápido que en los climas templados.', B: 'El método de recuento de anillos claros y oscuros sería menos efectivo.', C: 'Los insectos tendrían más dificultades para atacar los troncos.', D: 'Los árboles no necesitarían estar conectados a través de sus raíces.' } },
+      { id: 27, section: 3, eje: 'Evaluar', correcta: 'B', pregunta: '¿Qué tono utiliza el autor para presentar la información sobre los árboles?', opciones: { A: 'Poético y nostálgico.', B: 'Informativo y objetivo.', C: 'Crítico y denunciante.', D: 'Escéptico y precavido.' } },
+      { id: 28, section: 3, eje: 'Interpretar', correcta: 'C', pregunta: '¿Cuál es el propósito comunicativo del texto?', opciones: { A: 'Instruir al lector sobre cómo contar anillos en un tronco cortado.', B: 'Convencer sobre la necesidad de proteger los bosques nativos.', C: 'Informar sobre la biología y el comportamiento social de los árboles.', D: 'Relatar la historia de los organismos más antiguos de la Tierra.' } },
+      { id: 29, section: 3, eje: 'Interpretar', correcta: 'B', pregunta: '¿Qué sentido tiene la palabra "críticas" en la expresión "funciones críticas para el ecosistema"?', opciones: { A: 'Negativas, porque ponen en riesgo la vida humana.', B: 'Vitales, porque son indispensables para el equilibrio ambiental.', C: 'Analíticas, porque requieren un estudio científico profundo.', D: 'Variables, porque dependen del tipo de suelo y clima.' } },
+      { id: 30, section: 3, eje: 'Evaluar', correcta: 'B', pregunta: 'Si un lector afirma que el texto es un "alegato ecologista", ¿en qué se equivoca?', opciones: { A: 'En que el texto no menciona la actividad humana como causa de muerte.', B: 'En que el propósito predominante es exponer hechos y no persuadir.', C: 'En que los árboles no son realmente importantes para el CO2.', D: 'En que el análisis químico es una opinión y no un dato científico.' } },
+      { id: 31, section: 4, eje: 'Localizar', correcta: 'B', pregunta: '¿Qué diferencia fundamental existe entre un Kiosco Tipo A y uno Tipo B?', opciones: { A: 'El tipo de frutas que pueden vender.', B: 'La conexión a la red de agua potable y alcantarillado.', C: 'La prohibición de vender productos con sellos "Alto en".', D: 'La capacidad de preparar sándwiches en el mismo local.' } },
+      { id: 32, section: 4, eje: 'Interpretar', correcta: 'B', pregunta: '¿Qué condición es necesaria para que un kiosco pueda vender yogur y leche?', opciones: { A: 'Ser de categoría A y tener una estructura móvil.', B: 'Contar con una conexión a la red de agua potable (Tipo B o C).', C: 'Estar ubicado en el patio central del establecimiento.', D: 'Poseer una autorización especial de los padres y apoderados.' } },
+      { id: 33, section: 4, eje: 'Interpretar', correcta: 'B', pregunta: '¿Cuál es el aporte de la "Nota" al final del texto?', opciones: { A: 'Establece una excepción para los kioscos de categoría C.', B: 'Generaliza una restricción sanitaria para todos los tipos de kioscos.', C: 'Explica cómo se deben etiquetar los alimentos saludables.', D: 'Sugiere que los sellos "Alto en" son opcionales en ferias escolares.' } },
+      { id: 34, section: 4, eje: 'Interpretar', correcta: 'B', pregunta: '¿Cuál es el propósito comunicativo de esta tabla?', opciones: { A: 'Publicitar los beneficios de los sándwiches saludables.', B: 'Clasificar los kioscos escolares según sus exigencias sanitarias.', C: 'Denunciar la falta de agua potable en los colegios rurales.', D: 'Comparar los precios de los alimentos en diferentes categorías.' } },
+      { id: 35, section: 4, eje: 'Interpretar', correcta: 'C', pregunta: 'Un colegio que solo tiene un espacio pequeño y móvil para el recreo debe instalar un:', opciones: { A: 'Kiosco Tipo C.', B: 'Kiosco Tipo B.', C: 'Kiosco Tipo A.', D: 'Kiosco de Almuerzos.' } },
+      { id: 36, section: 4, eje: 'Interpretar', correcta: 'B', pregunta: '¿A qué se refiere el texto con la infraestructura "desarmable"?', opciones: { A: 'A una construcción de cemento que se puede demoler.', B: 'A un puesto ligero que puede ser montado y retirado con facilidad.', C: 'A un local que no cumple con las normas de seguridad estructural.', D: 'A una cocina que requiere herramientas complejas para funcionar.' } },
+      { id: 37, section: 4, eje: 'Interpretar', correcta: 'B', pregunta: '¿Cuál de las siguientes inferencias es válida a partir de la tabla?', opciones: { A: 'Los kioscos Tipo A son los más caros para los estudiantes.', B: 'El riesgo sanitario aumenta a medida que se manipulan más alimentos.', C: 'La red de alcantarillado no es necesaria para vender lácteos.', D: 'Todos los colegios de Chile tienen actualmente kioscos Tipo C.' } },
+      { id: 38, section: 4, eje: 'Evaluar', correcta: 'B', pregunta: '¿Qué recurso no lingüístico facilita la comprensión de esta información?', opciones: { A: 'El uso de una tipografía manuscrita.', B: 'La disposición de los datos en filas y columnas comparativas.', C: 'La inclusión de iconos de frutas y verduras en cada celda.', D: 'El cambio de color entre el título y el cuerpo del texto.' } },
+      { id: 39, section: 4, eje: 'Interpretar', correcta: 'B', pregunta: '¿Qué se puede concluir sobre la política de salud escolar a partir del texto?', opciones: { A: 'Que solo le importa la infraestructura y no la calidad de la comida.', B: 'Que busca restringir los alimentos procesados y fomentar los naturales.', C: 'Que es indiferente a la presencia de sellos "Alto en" en los recreos.', D: 'Que obliga a todos los niños a almorzar sándwiches preparados.' } },
+      { id: 40, section: 4, eje: 'Evaluar', correcta: 'A', pregunta: '¿Cuál es la perspectiva del emisor de este reglamento?', opciones: { A: 'Informativa y reguladora de la salud pública.', B: 'Crítica sobre los hábitos alimenticios de los jóvenes.', C: 'Persuasiva para aumentar las ventas de los quiosqueros.', D: 'Nostálgica respecto a la comida casera de antaño.' } }
+    ];
+
+    const state = {
+      student: { nombre: '', apellido: '', correo: '' },
+      currentIndex: 0,
+      answers: {},
+      startTime: null,
+      endTime: null,
+      finished: false,
+      timeoutTriggered: false
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function saveState() {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(CONFIG.storageKey);
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        Object.assign(state, parsed);
+      } catch (e) {
+        console.warn('No se pudo cargar el estado guardado.');
+      }
+    }
+
+    function clearState() {
+      localStorage.removeItem(CONFIG.storageKey);
+    }
+
+    function showScreen(screenId) {
+      ['screen-start', 'screen-instructions', 'screen-test', 'screen-result'].forEach(id => $(id).classList.add('hidden'));
+      $(screenId).classList.remove('hidden');
+    }
+
+    function validateStudent() {
+      const nombre = $('nombre').value.trim();
+      const apellido = $('apellido').value.trim();
+      const correo = $('correo').value.trim();
+      if (!nombre || !apellido || !correo) {
+        alert('Completa nombre, apellido y correo antes de continuar.');
+        return false;
+      }
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+      if (!emailOk) {
+        alert('Ingresa un correo válido.');
+        return false;
+      }
+      state.student = { nombre, apellido, correo };
+      saveState();
+      return true;
+    }
+
+    function formatTime(totalSeconds) {
+      const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+      const secs = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function getRemainingSeconds() {
+      if (!state.startTime || state.finished) return CONFIG.durationMinutes * 60;
+      const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+      return Math.max(CONFIG.durationMinutes * 60 - elapsed, 0);
+    }
+
+    let timerHandle = null;
+    function startTimer() {
+      if (timerHandle) clearInterval(timerHandle);
+      updateTimer();
+      timerHandle = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+      const remaining = getRemainingSeconds();
+      $('timer-pill').textContent = `Tiempo restante: ${formatTime(remaining)}`;
+      if (remaining <= 0 && !state.finished) {
+        state.timeoutTriggered = true;
+        finalizeTest('Tiempo finalizado.');
+      }
+    }
+
+    function renderPassage(section) {
+      const box = $('passage-box');
+      box.innerHTML = '';
+      const title = document.createElement('h3');
+      title.textContent = section.title;
+      box.appendChild(title);
+
+      const subtitle = document.createElement('p');
+      subtitle.innerHTML = `<strong>${section.subtitle}</strong>`;
+      box.appendChild(subtitle);
+
+      if (section.paragraphs) {
+        section.paragraphs.forEach(p => {
+          const el = document.createElement('p');
+          el.textContent = p;
+          box.appendChild(el);
+        });
+      }
+
+      if (section.table) {
+        const table = document.createElement('table');
+        section.table.forEach((row, idx) => {
+          const tr = document.createElement('tr');
+          row.forEach(cell => {
+            const tag = idx === 0 ? 'th' : 'td';
+            const td = document.createElement(tag);
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+        });
+        box.appendChild(table);
+      }
+
+      if (section.note) {
+        const note = document.createElement('p');
+        note.innerHTML = `<strong>${section.note}</strong>`;
+        box.appendChild(note);
+      }
+    }
+
+    function renderQuestion() {
+      const q = questions[state.currentIndex];
+      const section = sections.find(s => s.id === q.section);
+      $('question-counter').textContent = `Pregunta ${q.id} de ${questions.length}`;
+      $('student-pill').textContent = `Estudiante: ${state.student.nombre} ${state.student.apellido}`;
+      $('progress-bar').style.width = `${((q.id - 1) / questions.length) * 100}%`;
+      renderPassage(section);
+      $('question-text').textContent = q.pregunta;
+
+      const optionsBox = $('options-box');
+      optionsBox.innerHTML = '';
+      const selected = state.answers[q.id] || '';
+      Object.entries(q.opciones).forEach(([letter, text]) => {
+        const label = document.createElement('label');
+        label.className = `option ${selected === letter ? 'selected' : ''}`;
+        label.innerHTML = `
+          <input type="radio" name="respuesta" value="${letter}" ${selected === letter ? 'checked' : ''} />
+          <div><strong>${letter})</strong> ${text}</div>
+        `;
+        label.addEventListener('click', () => {
+          state.answers[q.id] = letter;
+          saveState();
+          [...optionsBox.querySelectorAll('.option')].forEach(el => el.classList.remove('selected'));
+          label.classList.add('selected');
+        });
+        optionsBox.appendChild(label);
+      });
+    }
+
+    function buildResultRows() {
+      return questions.map(q => {
+        const studentAnswer = state.answers[q.id] || '';
+        let resultado = 'Omitida';
+        if (studentAnswer) resultado = studentAnswer === q.correcta ? 'OK' : 'X';
+        return {
+          nombre: state.student.nombre,
+          apellido: state.student.apellido,
+          correo: state.student.correo,
+          ID: q.id,
+          Eje: q.eje,
+          Pregunta: q.pregunta,
+          Respuesta: studentAnswer || '',
+          Resultado: resultado,
+          Correcta: q.correcta
+        };
+      });
+    }
+
+    function buildSummary(rows) {
+      const answered = rows.filter(r => r.Respuesta).length;
+      const correct = rows.filter(r => r.Resultado === 'OK').length;
+      const incorrect = rows.filter(r => r.Resultado === 'X').length;
+      const omitted = rows.filter(r => r.Resultado === 'Omitida').length;
+      const score = Math.round((correct / rows.length) * 100);
+      const byAxis = {};
+      rows.forEach(r => {
+        if (!byAxis[r.Eje]) byAxis[r.Eje] = { total: 0, answered: 0, ok: 0 };
+        byAxis[r.Eje].total += 1;
+        if (r.Respuesta) byAxis[r.Eje].answered += 1;
+        if (r.Resultado === 'OK') byAxis[r.Eje].ok += 1;
+      });
+      return { answered, correct, incorrect, omitted, score, byAxis };
+    }
+
+    function downloadExcel(rows) {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+      const fileName = `resultados_${sanitizeFilePart(state.student.nombre)}_${sanitizeFilePart(state.student.apellido)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    }
+
+
+    function sanitizeFilePart(text) {
+      return (text || 'estudiante').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    }
+
+    function buildPayload(rows) {
+      return {
+        attempt_id: `${Date.now()}_${sanitizeFilePart(state.student.nombre)}_${sanitizeFilePart(state.student.apellido)}`,
+        nombre: state.student.nombre,
+        apellido: state.student.apellido,
+        correo: state.student.correo,
+        generatedAt: new Date().toISOString(),
+        finishedByTimeout: state.timeoutTriggered,
+        rows
+      };
+    }
+
+    function sendViaHiddenForm(payload) {
+      return new Promise((resolve) => {
+        const iframeName = `submit_frame_${Date.now()}`;
+        const iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        iframe.style.display = 'none';
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = CONFIG.webhookUrl;
+        form.target = iframeName;
+        form.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = JSON.stringify(payload);
+
+        form.appendChild(input);
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+
+        let settled = false;
+        const cleanup = () => {
+          setTimeout(() => {
+            iframe.remove();
+            form.remove();
+          }, 1500);
+        };
+
+        iframe.onload = () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve({ ok: true, transport: 'form' });
+        };
+
+        form.submit();
+
+        setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve({ ok: true, transport: 'form-timeout' });
+        }, 4000);
+      });
+    }
+
+    async function sendToWebhook(rows) {
+      if (!CONFIG.webhookUrl) return { skipped: true };
+      const payload = buildPayload(rows);
+
+      try {
+        const response = await fetch(CONFIG.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+        return response.json().catch(() => ({ ok: true, transport: 'fetch' }));
+      } catch (error) {
+        return sendViaHiddenForm(payload);
+      }
+    }
+
+    function renderResultScreen(rows, message) {
+      const summary = buildSummary(rows);
+      $('sum-answered').textContent = summary.answered;
+      $('sum-correct').textContent = summary.correct;
+      $('sum-incorrect').textContent = summary.incorrect;
+      $('sum-omitted').textContent = summary.omitted;
+      $('sum-score').textContent = `${summary.score}%`;
+
+      const axisSummary = $('axis-summary');
+      axisSummary.innerHTML = '<h3>Desempeño por eje</h3><p class="muted">% Dominio = aciertos sobre el total del eje. % Precisión = aciertos sobre las preguntas respondidas en ese eje.</p>';
+      const table = document.createElement('table');
+      table.innerHTML = '<tr><th>Eje</th><th>Aciertos</th><th>Respondidas</th><th>Total</th><th>% Dominio</th><th>% Precisión</th></tr>';
+      Object.entries(summary.byAxis).forEach(([eje, data]) => {
+        const tr = document.createElement('tr');
+        const dominio = Math.round((data.ok / data.total) * 100);
+        const precision = data.answered > 0 ? Math.round((data.ok / data.answered) * 100) : 0;
+        tr.innerHTML = `<td>${eje}</td><td>${data.ok}</td><td>${data.answered}</td><td>${data.total}</td><td>${dominio}%</td><td>${precision}%</td>`;
+        table.appendChild(tr);
+      });
+      axisSummary.appendChild(table);
+
+      showScreen('screen-result');
+      const saveStatus = $('save-status');
+      saveStatus.className = 'status info';
+      saveStatus.textContent = message;
+
+      $('btn-download-xlsx').onclick = () => downloadExcel(rows);
+      $('btn-retry-send').onclick = async () => {
+        $('btn-retry-send').disabled = true;
+        saveStatus.className = 'status info';
+        saveStatus.textContent = 'Reintentando envío automático…';
+        try {
+          const result = await sendToWebhook(rows);
+          saveStatus.className = 'status ok';
+          saveStatus.textContent = result.skipped
+            ? 'No hay un endpoint configurado para enviar resultados.'
+            : 'Tus resultados fueron enviados automáticamente.';
+        } catch (error) {
+          saveStatus.className = 'status error';
+          saveStatus.textContent = `No se pudo enviar automáticamente. Descarga el respaldo y repórtalo. Detalle: ${error.message}`;
+        } finally {
+          $('btn-retry-send').disabled = false;
+        }
+      };
+    }
+
+    async function finalizeTest(message = 'Test finalizado.') {
+      if (state.finished) return;
+      state.finished = true;
+      state.endTime = Date.now();
+      saveState();
+      if (timerHandle) clearInterval(timerHandle);
+
+      const rows = buildResultRows();
+      renderResultScreen(rows, `${message} Enviando resultados…`);
+
+      const saveStatus = $('save-status');
+      try {
+        const result = await sendToWebhook(rows);
+        if (result.skipped) {
+          saveStatus.className = 'status error';
+          saveStatus.textContent = 'No hay un endpoint configurado para enviar resultados.';
+        } else {
+          saveStatus.className = 'status ok';
+          saveStatus.textContent = 'Tus resultados fueron enviados automáticamente.';
+        }
+      } catch (error) {
+        saveStatus.className = 'status error';
+        saveStatus.textContent = `No se pudo enviar automáticamente. Descarga el respaldo y repórtalo. Detalle: ${error.message}`;
+      }
+    }
+
+    function restoreIfNeeded() {
+      loadState();
+      if (state.student.nombre) {
+        $('nombre').value = state.student.nombre || '';
+        $('apellido').value = state.student.apellido || '';
+        $('correo').value = state.student.correo || '';
+      }
+      if (state.finished) {
+        const rows = buildResultRows();
+        renderResultScreen(rows, 'Se restauró un intento ya finalizado.');
+        return;
+      }
+      if (state.startTime) {
+        showScreen('screen-test');
+        renderQuestion();
+        startTimer();
+      }
+    }
+
+    $('btn-go-instructions').addEventListener('click', () => {
+      if (!validateStudent()) return;
+      showScreen('screen-instructions');
+    });
+
+    $('btn-back-start').addEventListener('click', () => showScreen('screen-start'));
+
+    $('btn-start-test').addEventListener('click', () => {
+      if (!state.student.nombre) {
+        if (!validateStudent()) return;
+      }
+      state.startTime = Date.now();
+      state.currentIndex = 0;
+      state.answers = {};
+      state.endTime = null;
+      state.finished = false;
+      state.timeoutTriggered = false;
+      saveState();
+      showScreen('screen-test');
+      renderQuestion();
+      startTimer();
+    });
+
+    $('btn-next').addEventListener('click', () => {
+      if (state.currentIndex < questions.length - 1) {
+        state.currentIndex += 1;
+        saveState();
+        renderQuestion();
+      } else {
+        finalizeTest('Se completó la última pregunta.');
+      }
+    });
+
+    $('btn-finish').addEventListener('click', () => {
+      const ok = confirm('¿Deseas finalizar el test ahora?');
+      if (ok) finalizeTest('Finalización manual.');
+    });
+
+    $('btn-reset').addEventListener('click', () => {
+      const ok = confirm('Se eliminará el progreso guardado de este navegador. ¿Continuar?');
+      if (!ok) return;
+      clearState();
+      state.student = { nombre: '', apellido: '', correo: '' };
+      state.currentIndex = 0;
+      state.answers = {};
+      state.startTime = null;
+      state.endTime = null;
+      state.finished = false;
+      state.timeoutTriggered = false;
+      $('nombre').value = '';
+      $('apellido').value = '';
+      $('correo').value = '';
+      showScreen('screen-start');
+    });
+
+    restoreIfNeeded();
+  </script>
+</body>
+</html>
